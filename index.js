@@ -14,7 +14,7 @@ const dbQueue = level(require("os").homedir() + "/.ethfaucetssl/queue");
 const dbExceptions = level(
   require("os").homedir() + "/.ethfaucetssl/exceptions"
 );
-const greylistduration = 1000 * 60 * 60 * 24;
+const greylistduration = 1000 * 15;
 
 var faucet_keystore = JSON.stringify(require("./wallet.json"));
 
@@ -82,14 +82,18 @@ lightwallet.keystore.deriveKeyFromPassword(config.walletpwd, function(
   // https.createServer(options, app).listen(443);
 });
 
-// Get faucet balance in ether ( or other denomination if given )
-function getFaucetBalance(denomination) {
+function getAddressBalance(address, denomination) {
   return parseFloat(
     web3.fromWei(
-      web3.eth.getBalance(account).toNumber(),
+      web3.eth.getBalance(address).toNumber(),
       denomination || "ether"
     )
   );
+}
+
+// Get faucet balance in ether ( or other denomination if given )
+function getFaucetBalance(denomination) {
+  return getAddressBalance(account, denomination);
 }
 
 app.use(cors());
@@ -118,6 +122,7 @@ app.get("/faucetinfo", function(req, res) {
   });
 });
 
+/*
 app.get("/blacklist/:address", function(req, res) {
   var address = fixaddress(req.params.address);
   if (isAddress(address)) {
@@ -132,6 +137,7 @@ app.get("/blacklist/:address", function(req, res) {
     });
   }
 });
+*/
 
 app.get("/q", function(req, res) {
   getQueue().then(q => {
@@ -294,6 +300,9 @@ function iterateQueue() {
 // lookup if there is an exception made for this address
 function getException(address) {
   return new Promise((resolve, reject) => {
+    if (getAddressBalance(address) >= config.payoutamountinether) {
+      return resolve({address: address, reason: 'sufficient funds'});
+    }
     dbExceptions.get(address, function(err, value) {
       if (err) {
         if (err.notFound) {
@@ -358,9 +367,9 @@ app.get("/donate/:address", function(req, res) {
     const val = {
       address: address
     };
-    Promise.all([getException(address), getException(ip)]).then(
-      ([addressException, ipException]) => {
-        var exception = addressException || ipException;
+    Promise.all([getException(address)]).then(
+      ([addressException]) => {
+        var exception = addressException;
         if (exception) {
           if (exception.reason === "greylist") {
             console.log(exception.address, "is on the greylist");
@@ -369,14 +378,13 @@ app.get("/donate/:address", function(req, res) {
               message: "you are greylisted",
               duration: exception.created + greylistduration - Date.now()
             });
-          }
-          if (exception.reason === "blacklist") {
-            console.log(exception.address, "is on the blacklist");
-            return res.status(403).json({
-              address: address,
-              message: "you are blacklisted"
+          } else {
+	    console.log(address, "denied, reason:", exception.reason);
+	    return res.status(403).json({
+	      address: address,
+	      message: exception.reason
             });
-          }
+	  }
         } else {
           canDonateNow().then(canDonate => {
             if (canDonate) {
@@ -409,7 +417,7 @@ app.get("/donate/:address", function(req, res) {
                   enqueueRequest(address).then(paydate => {
                     console.log("request queued for", address);
                     Promise.all([
-                      setException(ip, "greylist"),
+                      // setException(ip, "greylist"),
                       setException(address, "greylist")
                     ]).then(() => {
                       var queueitem = {
