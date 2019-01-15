@@ -1,22 +1,22 @@
+var path = require("path");
 var express = require("express");
 var app = express();
 var cors = require("cors");
 var Web3 = require("web3");
 var HookedWeb3Provider = require("hooked-web3-provider");
 var lightwallet = require("eth-lightwallet");
-var config = require("./config.json");
 const mkdirp = require("mkdirp");
 const level = require("level");
+const assetPath = path.join(require("os").homedir(), ".ethfaucetssl");
 
-mkdirp.sync(require("os").homedir() + "/.ethfaucetssl/queue");
-mkdirp.sync(require("os").homedir() + "/.ethfaucetssl/exceptions");
-const dbQueue = level(require("os").homedir() + "/.ethfaucetssl/queue");
-const dbExceptions = level(
-  require("os").homedir() + "/.ethfaucetssl/exceptions"
-);
+mkdirp.sync(path.join(assetPath, "queue"));
+mkdirp.sync(path.join(assetPath, "exceptions"));
+const config = require(path.join(assetPath, "config.json"));
+const dbQueue = level(path.join(assetPath, "queue"));
+const dbExceptions = level(path.join(assetPath, "exceptions"));
 const greylistduration = 1000 * 15;
 
-var faucet_keystore = JSON.stringify(require("./wallet.json"));
+var faucet_keystore = JSON.stringify(require(path.join(assetPath, "wallet.json")));
 
 var secretSeed = lightwallet.keystore.generateRandomSeed();
 
