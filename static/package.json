@@ -6,12 +6,14 @@
     "axios": "^0.18.0",
     "bulma": "^0.7.1",
     "ethjs": "^0.4.0",
+    "http-server": "^0.11.1",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "react-global-configuration": "^1.3.0",
     "react-number-format": "^3.5.1",
     "react-scripts": "1.1.4",
-    "timespan": "^2.3.0"
+    "timespan": "^2.3.0",
+    "yarn": "^1.13.0"
   },
   "scripts": {
     "start": "react-scripts start",

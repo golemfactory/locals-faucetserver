@@ -6,6 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "pkg": {
+    "assets": ["config.json", "wallet.json"]
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -17,6 +20,7 @@
     "level": "^3.0.0",
     "lodash": "4.11.1",
     "mkdirp": "^0.5.1",
+    "pkg": "^4.3.7",
     "web3": "0.15.3"
   }
 }
