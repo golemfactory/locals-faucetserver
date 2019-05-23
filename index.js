@@ -14,7 +14,7 @@ mkdirp.sync(path.join(assetPath, "exceptions"));
 const config = require(path.join(assetPath, "config.json"));
 const dbQueue = level(path.join(assetPath, "queue"));
 const dbExceptions = level(path.join(assetPath, "exceptions"));
-const greylistduration = 1000 * 15;
+const greylistduration = config.greylistduration || 15 * 1000;
 
 var faucet_keystore = JSON.stringify(require(path.join(assetPath, "wallet.json")));
 
