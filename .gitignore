@@ -33,3 +33,9 @@ node_modules
 .node_repl_history
 /config.json
 /wallet.json
+
+# Static build
+static/build
+golem-faucet
+.node-xmlhttprequest-sync*
+
